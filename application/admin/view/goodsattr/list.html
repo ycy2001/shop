@@ -1,0 +1,253 @@
+{include file="header"}
+<section class="Hui-article-box">
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 产品管理 <span class="c-gray en">&gt;</span> 属性管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+
+    <div class="Hui-article">
+        <article class="cl pd-20">
+            <div class="text-c">
+                <input type="text" id="attrcate_name" placeholder="分类名称" value="" class="input-text" style="width:146px">
+                <button id="addattr" type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe600;</i> 添加</button>
+                <button onclick="attrcate_show()" n type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe600;</i> 查看分类</button>
+            </div>
+            <div class="text-c">
+                <!--<form class="Huiform" method="post" action="" target="_self">-->
+                <input type="text" id="attr_name" placeholder="属性名称" value="" class="input-text" style="width:166px">
+                <select id="attrcate" onclick="change()" style="height: 31px;width: 80px"></select>
+                <button id="add" type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe600;</i> 添加</button>
+                <!--</form>-->
+            </div>
+            <div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a href="javascript:;" onclick="datadel()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a></span><input type="hidden"  id="__token__"value="{$Request.token}" /> </div>
+            <div class="mt-10">
+                <table class="table table-border table-bordered table-bg table-sort">
+                    <thead>
+                    <tr class="text-c">
+                        <th width="25"><input type="checkbox" name="" value=""></th>
+                        <th width="70">ID</th>
+                        <th width="200">属性名称</th>
+                        <th width="200">所属分类</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="show"></tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+<div id="attr_detaile_show" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-body">
+                <input id="d_id" type="hidden" value="">
+                <input type="text" id="d_name" placeholder="名称" value="" class="input-text" style="width:200px">
+                <button id="detaile_add" class="btn btn-primary">添加</button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-border table-bordered table-bg table-sort">
+                    <thead>
+                    <tr class="text-c">
+                        <th width="70">ID</th>
+                        <th width="200">属性值</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="detaile"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="img_update">确定</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="attr_show" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-body">
+                <table class="table table-border table-bordered table-bg table-sort">
+                    <thead>
+                    <tr class="text-c">
+                        <th width="70">ID</th>
+                        <th width="200">商品分类</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="attrcate_show"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="yes">确定</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--_footer 作为公共模版分离出去-->
+{include file="footer"}
+<!--/_footer /作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__HUI__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__HUI__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__HUI__/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+
+</script>
+<script>
+    $(document).ready(function() {
+        show();
+        show_attrcate();
+    })
+    function attrcate_show(){
+        $.ajax({
+            url:"{:url('goodsattr/showattrcate')}",
+            data:{
+                html_type:'json'
+            },
+            dataType:"json",
+            success:function(result){
+                // console.log(result)
+                if (result.status=='ok'){
+                    var data=result.data;
+                    var tr='';
+                        for (var i=0; i<data.length;i++){
+                            tr=tr+"<tr class='text-c'><td>"+data[i].id+"</td><td class='text-c' style='font-size: 20px'>"+data[i].name+"</td><td class='f-14 product-brand-manage'><a style='text-decoration:none'   title='编辑'><i class='Hui-iconfont'>&#xe6df;</i></a> &nbsp;&nbsp;&nbsp;<a style='text-decoration:none' class='ml-5'  href='javascript:;'  title='删除'><i class='Hui-iconfont'>&#xe6e2;</i></a></td></tr>"
+                        }
+                        $("#attrcate_show").html(tr);
+                }
+            }
+        })
+        $("#attr_show").modal("show")
+    }
+    function show_attrcate(){
+        $.ajax({
+            url:"{:url('goodsattr/show_attrcate')}",
+            dataType:'json',
+            success:function(result){
+                // console.log(result)
+                var option='<option value="0">请选择</option>';
+                for (var i=0; i<result.length;i++){
+                    option=option+"<option value="+result[i].id+">"+result[i].name+"</option>"
+                }
+                $("#attrcate").html(option);
+            }
+        })
+    }
+    $("#add").click(function () {
+        var attr_name = $('#attr_name').val()
+        var attrcate_id = $('#attrcate').val()
+        $.ajax({
+            url:"{:url('goodsattr/addaction')}",
+            type:'post',
+            data:{
+                attr_name:attr_name,
+                attrcate_id:attrcate_id
+            },
+            dataType:'json',
+            success:function(result){
+                console.log(result)
+                if (result.status=='ok'){
+                    $('#attr_name').val('')
+                    show(attrcate_id);
+                }
+                if (result.status=='error'){
+                    $('#attr_name').val('')
+                    show(attrcate_id);
+                }
+            }
+        })
+    })
+    $("#addattr").click(function () {
+        var attrcate_name = $('#attrcate_name').val()
+        $.ajax({
+            url:"{:url('goodsattr/addattr')}",
+            type:'post',
+            data:{
+                attrcate_name:attrcate_name,
+            },
+            dataType:'json',
+            success:function(result){
+                console.log(result)
+                if (result.status=='ok'){
+                    show_attrcate();
+                    $('#attrcate_name').val('')
+                }
+                if (result.status=='error'){
+                    show_attrcate();
+                    $('#attrcate_name').val('')
+                }
+            }
+        })
+    })
+    function change() {
+        var id=$('#attrcate').val()
+        show(id);
+    }
+    function show(id=0){
+        $.ajax({
+            url:"{:url('goodsattr/show')}",
+            type:'post',
+            data:{
+                id:id,
+            },
+            dataType:"json",
+            success:function(result){
+                if (result.status=='error'){
+                    $(".table tbody").html("<tr><td colspan='5' class='text-c'>"+result.data+"</td></tr>");
+                }else{
+                    var data=result.data;
+                    var tr='';
+                    if (result.status=='ok'){
+                        for (var i=0; i<data.length;i++){
+                            tr=tr+"<tr class='text-c'><td><input name='' type='checkbox' value=''></td><td>"+data[i].aid+"</td><td class='text-c' style='font-size: 20px'>"+data[i].aname+"</td><td class='text-c'>"+data[i].attr_category_name+"</td><td class='f-14 product-brand-manage'><a style='text-decoration:none' onclick='attrshow("+data[i].aid+")'  title='编辑'><i class='Hui-iconfont'>&#xe6df;</i></a> &nbsp;&nbsp;&nbsp;<a style='text-decoration:none' class='ml-5'  href='javascript:;' onclick='mydelete(" + data[i]['id'] +")' title='删除'><i class='Hui-iconfont'>&#xe6e2;</i></a></td></tr>"
+                        }
+                        $("#show").html(tr);
+                    }
+                }
+            }
+        })
+    }
+    function attrshow(attr_id) {
+        $.ajax({
+            url: "{:url('goodsattr/detaile_show')}",
+            type: 'post',
+            data: {
+                attr_id:attr_id,
+            },
+            dataType:'json',
+            success:function (result) {
+                var data=result.data;
+                var tr='';
+                if (result.status=='ok'){
+                    for (var i=0; i<data.length;i++){
+                        tr=tr+"<tr class='text-c'><td>"+data[i].id+"</td><td class='text-c' style='font-size: 20px'>"+data[i].name+"</td><td class='f-14 product-brand-manage'><a style='text-decoration:none' class='ml-5'  href='javascript:;'  title='删除'><i class='Hui-iconfont'>&#xe6e2;</i></a></td></tr>"
+                    }
+                    $("#detaile").html(tr);
+                }
+                $('#d_id').val(attr_id);
+                $("#attr_detaile_show").modal("show")
+            }
+        })
+    }
+    $("#detaile_add").click(function () {
+        var attr_id = $('#d_id').val()
+        var name = $('#d_name').val()
+        $.ajax({
+            url:"{:url('goodsattr/detaile_add')}",
+            type:'post',
+            data:{
+                attr_id:attr_id,
+                name:name
+            },
+            dataType:'json',
+            success:function(result){
+                $('#d_name').val('')
+                attrshow(attr_id)
+            }
+        })
+    })
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

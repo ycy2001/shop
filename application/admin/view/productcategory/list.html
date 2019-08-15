@@ -1,0 +1,99 @@
+{include file="header"}
+<section class="Hui-article-box">
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 产品管理 <span class="c-gray en">&gt;</span> 产品分类 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+    <div class="Hui-article">
+        <article class="cl pd-20">
+            <div>
+                <div class="text-c">
+                    <span id="pid" value="0">一级分类</span>
+                    <input type="text" id="name" placeholder="名称" value="" class="input-text" style="width:160px">
+                    </span><button id="add" type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe600;</i> 添加</button>
+                    <!--</form>-->
+                </div>
+            </div>
+            <div style="width: 300px;height: 500px;background-color: #0f9ae0;position: absolute;left: 40%;overflow-y:scroll">
+                <div id="tree"></div>
+            </div>
+
+        </article>
+    </div>
+</section>
+<!--_footer 作为公共模版分离出去-->
+{include file="footer"}
+<!--/_footer /作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__HUI__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__HUI__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__HUI__/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript" src="__HUI__/lib/zTree/v3/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript">
+
+</script>
+/请在上方写此页面业务相关的脚本
+<script>
+    $(document).ready(function() {
+        show()
+    })
+    function show() {
+        $.ajax({
+            url:"{:url('productcategory/show')}",
+            success:function (result) {
+                // console.log(result)
+                $("#tree").html(result)
+                // $('ul ul').css('display','none')
+
+            }
+        })
+    }
+    $(document).on('click','li' ,function () {
+        pid_html=$(this).html()
+        pid=$(this).attr('value')
+        $('#pid').html(pid_html)
+        $('#pid').attr('value',pid)
+        name=pid_html.split("<")[0]
+        $('#pid').html(name+"的子类")
+        var a=$(this).next().css('display')
+        if(a=='none'){
+            $(this).next().css('display','block')
+        }else {
+            $(this).next().css('display','none')
+        }
+    })
+    $("#add").click(function () {
+        var pid=$('#pid').attr('value')
+        var name=$('#name').val()
+        $.ajax({
+            url:"{:url('productcategory/addaction')}",
+            type:'post',
+            data:{
+                pid:pid,
+                name:name,
+            },
+            dataType:'json',
+            success:function(result){
+                if (result.status=='ok'){
+                    show()
+                }
+            }
+        })
+    })
+    function my_delete(id,pid) {
+        $.ajax({
+            url:"{:url('productcategory/delete')}",
+            type:'post',
+            data:{
+                id:id,
+                pid:pid,
+            },
+            dataType:'json',
+            success:function(result){
+                if (result.status=='ok'){
+                    show()
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>

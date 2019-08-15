@@ -1,0 +1,181 @@
+{include file="header"}
+<section class="Hui-article-box">
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 产品管理 <span class="c-gray en">&gt;</span> 品牌管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+    <div class="Hui-article">
+        <article class="cl pd-20">
+            <div class="text-c">
+                <input type ="text" style="width: 200px" id="shoping_name" placeholder="商品名称"class ="input-text radius size-M">
+                <button id="show" type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe665;</i>搜索</button>
+            </div>
+            <div class="text-c" id="top"></div>
+            <div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a href="javascript:;" onclick="datadel()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a></span>　<a class="btn btn-primary radius" href="{:url('productlist/add')}" ><i class="Hui-iconfont">&#xe600;</i> 添加商品</a><input type="hidden"  id="__token__"value="{$Request.token}" /> </div>
+            <div class="mt-10">
+                <table class="table table-border table-bordered table-bg table-sort">
+                    <thead>
+                    <tr class="text-c">
+                        <th width="40"><input name="" type="checkbox" value=""></th>
+                        <th width="40">ID</th>
+                        <th width="40">分类</th>
+                        <th width="40">品牌</th>
+                        <th width="80">商品名称</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+<div id="imgadd" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-body">
+                <input id="gid" value="" type="hidden">
+                <input type="file" id="myfile" name="myfile" multiple="multiple" style="font-size: 0.7rem;">
+            </div>
+            <div class="modal-footer">
+                <button id="img_add" class="btn btn-primary">确定</button>
+                <button id="img_die" onClick="img_die()" class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="imgshow" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-body" >
+             <table id="img" border="1" style="width: 350px"></table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary">确定</button>
+                <button onClick="" class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--_footer 作为公共模版分离出去-->
+{include file="footer"}
+<!--/_footer /作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__HUI__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__HUI__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__HUI__/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#show").click();
+    })
+    function topshow($top) {
+        $("#shoping_name").val($top)
+        $("#show").click();
+    }
+    function imgadd(gid){
+        $("#gid").val(gid)
+        $("#imgadd").modal("show")
+    }
+    function imgshow(gid){
+        $.ajax({
+            url: "{:url('productlist/imgshow')}",
+            type: 'post',
+            data: {
+                id:gid,
+            },
+            dataType:'json',
+            success:function (result) {
+                var data = result.data
+                var tr = '';
+                for (var i = 0; i < data.length; i++) {
+                    tr = tr + "<tr　 class='text-c'><td style='width: 200px'><img src='__STATIC__/image/goods/"+data[i]['img_big']+"'style='height: 120px;width: 200px'></td><td style='width: 150px;text-align: center'><a class=\"btn btn-primary radius\" onclick='img_del("+data[i]['id']+","+data[i]['goods_id']+")'  ><i class=\"Hui-iconfont\">&#xe600;</i> 删除</a></td></tr>"
+                }
+                $('#img').html(tr);
+            }
+        })
+        $("#imgshow").modal("show")
+    }
+    function img_del(id,gid) {
+        $.ajax({
+            url: "{:url('productlist/img_delete')}",
+            type: 'post',
+            data: {
+                id:id,
+            },
+            dataType:'json',
+            success:function (result) {
+                console.log(result)
+                imgshow(gid)
+            }
+        })
+    }
+    function img_die(){
+        $('#myfile').val('');
+    }
+    $(function($) {
+        $("#img_add").on('click', function(e) {
+            var formData = new FormData();
+            var id=$("#gid").val()
+            var file=$("#myfile")[0].files
+            // formData.ppend(name, element);
+            for (var i=0;i<file.length;i++){
+                formData.append('file[]', $('#myfile')[0].files[i]);
+            }
+            formData.append('id',id);
+
+            $.ajax({
+                url: "{:url('productlist/imgadd')}",
+                method: 'POST',
+                data: formData,
+                contentType: false, // 注意这里应设为false
+                processData: false,
+                cache: false,
+                success: function(result) {
+                    console.log(result)
+                    if (result.status=='ok') {
+                        show();
+                        $("#imgadd").modal("hide");
+                        img_die();
+                    }else{
+                        show();
+                        $("#imgadd").modal("hide")
+                        img_die();
+                    }
+                }
+
+            })
+        });
+    })
+    $("#show").on('click', function() {
+        var shop_name=$("#shoping_name").val();
+        $.ajax({
+            url:"{:url('productlist/show')}",
+            type:'post',
+            data:{
+                shop_name:shop_name,
+            },
+            dataType:'json',
+            success:function(result) {
+                console.log(result)
+                if (result.status == 'ok') {
+                    var data = result.data
+                    var top = result.top
+                    var tr = '';
+                    for (var i = 0; i < data.length; i++) {
+                        tr = tr + "<tr class='text-c'><td><input class='mycheckbox' name='' type='checkbox' value='" + data[i]['gid'] + "'></td><td>" + data[i]['gid'] + "</td><td class='text-c'>" + data[i]['cname'] + "</td><td class='text-c'>" + data[i]['bname'] + "</td><td class='text-c'>" + data[i]['goods_name'] + "<a href='{:url('productlist/shop_goods_show')}?id="+data[i]['gid']+"' style='text-decoration:none' class='ml-5'  title='查看单品'><i class='Hui-iconfont'>&#xe725;</i></a></td><td class='f-14 product-brand-manage'><a style='text-decoration:none' class='ml-5' onClick='imgadd("+data[i]['gid']+")' title='添加图片'><i class='Hui-iconfont'>&#xe61f;</i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a style='text-decoration:none' onClick='imgshow("+data[i]['gid']+")' class='ml-5'  title='图片查看'><i class='Hui-iconfont'>&#xe613;</i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a style='text-decoration:none' href='{:url('productlist/goods_add')}?id="+data[i]['gid']+"&attr_category_id="+data[i]['attr_category_id']+"'  class='ml-5'  title='单品添加'><i class='Hui-iconfont'>&#xe61d;</i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a style='text-decoration:none' href='{:url('productlist/productlistshow')}?id="+data[i]['gid']+"&attr_category_id="+data[i]['attr_category_id']+"'  title='编辑'><i class='Hui-iconfont'>&#xe695;</i></a> &nbsp;&nbsp;&nbsp;<a style='text-decoration:none' class='ml-5'  title='删除'><i class='Hui-iconfont'>&#xe609;</i></a></td></tr>"
+                    }
+                    var a='';
+                    for (var k=0; k< top.length; k++) {
+                        a=a+"<a onclick='topshow(\""+top[k]+"\")'>"+top[k]+"</a>&nbsp&nbsp&nbsp&nbsp&nbsp"
+                    }
+                    $('#top').html(a);
+                    $('.table tbody').html(tr);
+                }
+            }
+        })
+    })
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

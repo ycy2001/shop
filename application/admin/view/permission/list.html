@@ -1,0 +1,261 @@
+{include file="header"}
+<section class="Hui-article-box">
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 管理员管理 <span class="c-gray en">&gt;</span> 权限管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+
+    <div class="Hui-article">
+        <article class="cl pd-20">
+            <div class="text-c">
+                <!--<form class="Huiform" method="post" action="" target="_self">-->
+                <input type="text" id="name" placeholder="名称" value="" class="input-text" style="width:160px">
+                <input type="text" id="description" placeholder="描述" value="" class="input-text" style="width:160px">
+                <input type="text" id="path" placeholder="路径" value="" class="input-text" style="width:160px">
+                <select style="height: 30px;width: 100px" id="category_id"></select>
+                <input type="hidden" id="__token__" name="__token__" value="{$Request.token}" >
+                </span><button id="add" type="button" class="btn btn-success" name=""><i class="Hui-iconfont">&#xe600;</i> 添加</button>
+                <!--</form>-->
+                <span id="add_span"></span>
+            </div>
+            <div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l"><a  onclick="datadel()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a></span><span hidden id="token_delete">{$token}</span></div>
+            <div class="mt-10">
+                <table class="table table-border table-bordered table-bg table-sort">
+                    <thead>
+                    <tr class="text-c">
+                        <th width="25"><input type="checkbox" name="" value=""></th>
+                        <th width="70">ID</th>
+                        <th width="120">权限名称</th>
+                        <th width="200">权限描述</th>
+                        <th width="200">权限路径</th>
+                        <th width="200">权限分类</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+<div id="modal-demo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-header">
+                <h3 class="modal-title">修改</h3>
+                <a class="close" data-dismiss="modal" aria-hidden="true" href="javascript:void();">×</a>
+            </div>
+            <div class="modal-body">
+                <input id="u_id" type="hidden" value="">
+                名称：<input type="text" id="u_name" placeholder="名称" value="" class="input-text" style="width:500px">
+            </div>
+            <div class="modal-body">
+                描述：<input type="text" id="u_description" placeholder="描述" value="" class="input-text" style="width:500px">
+            </div>
+            <div class="modal-body">
+                路径：<input type="text" id="u_path" placeholder="路径" value="" class="input-text" style="width:500px">
+            </div>
+            <div class="modal-body">
+                分类：<select id="u_pcid" style="height: 30px;width: 200px"></select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="u_update">确定</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--_footer 作为公共模版分离出去-->
+{include file="footer"}
+<!--/_footer /作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__HUI__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__HUI__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__HUI__/lib/laypage/1.2/laypage.js"></script>
+<!--<script type="text/javascript">-->
+<!--$('.table-sort').dataTable({-->
+<!--"aaSorting": [[ 1, "desc" ]],//默认第几个排序-->
+<!--"bStateSave": true,//状态保存-->
+<!--"aoColumnDefs": [-->
+<!--//{"bVisible": false, "aTargets": [ 3 ]} //控制列的隐藏显示-->
+<!--{"orderable":false,"aTargets":[0,6]}// 制定列不参与排序-->
+<!--]-->
+<!--});-->
+<!--</script>-->
+<script>
+    $(document).ready(function() {
+        getcate();
+        show();
+    })
+    function update(id,name,description,path,pc_id){
+        $("#modal-demo").modal("show")
+        $("#u_id").val(id);
+        $("#u_name").val(name);
+        $("#u_description").val(description);
+        $("#u_path").val(path);
+        $("#u_pcid").val(pc_id);
+    }
+    function token(){
+        $.ajax({
+            url:"{:url('Common/token')}",
+            dataType:'json',
+            success:function(result) {
+                $('#__token__').val(result.token)
+            }
+        })
+    }
+    function getcate(){
+        $.ajax({
+            url:"{:url('permission/showcate')}",
+            dataType:'json',
+            success:function(result){
+                var option='';
+                for (var i=0; i<result.length;i++){
+                   option=option+"<option value="+result[i].id+">"+result[i].name+"</option>"
+                }
+                $("#category_id").html(option);
+                $("#u_pcid").html(option);
+            }
+        })
+    }
+    $("#u_update").click(function () {
+        var id = $('#u_id').val()
+        var name = $('#u_name').val()
+        var description = $('#u_description').val()
+        var path=$("#u_path").val()
+        var pc_id=$("#u_pcid").val()
+        var __token__ = $('#__token__').val()
+        $.ajax({
+            url:"{:url('permission/update')}",
+            type:'post',
+            data:{
+                id:id,
+                name:name,
+                description:description,
+                path:path,
+                pc_id:pc_id,
+                __token__:__token__
+            },
+            dataType:'json',
+            success:function(result){
+                console.log(result)
+                if (result.status=='ok'){
+                    show();
+                    token();
+                    $("#modal-demo").modal("hide")
+                }
+                if (result.status=='error'){
+                    show();
+                    token();
+                    $("#modal-demo").modal("hide")
+                }
+            }
+        })
+    })
+    $("#add").click(function () {
+        var name=$('#name').val()
+        var description=$('#description').val()
+        var path=$('#path').val()
+        var categroy_id=$('#category_id').val()
+        var __token__ = $('#__token__').val()
+        $.ajax({
+            url:"{:url('permission/addaction')}",
+            type:'post',
+            data:{
+                name:name,
+                path:path,
+                categroy_id:categroy_id,
+                description:description,
+                __token__:__token__
+            },
+            dataType:'json',
+            success:function(result){
+                if (result.status=='ok'){
+                    $("#add_span").html(result.data);
+                    $("#add_span").css("color",'green');
+                    $("#name").val('');
+                    $("#description").val('');
+                    $('#path').val('');
+                    setTimeout(function () {
+                        $("#add_span").html('');
+                    },3000);
+                    show();
+                    token();
+                }
+                if (result.status=='error'){
+                    // alert(result.data);
+                    $("#add_span").html(result.data);
+                    $("#add_span").css("color",'red');
+                    $("#name").val('');
+                    $("#description").val('');
+                    $('#path').val('');
+                    setTimeout(function () {
+                        $("#add_span").html('');
+                    },3000);
+                    show();
+                    token()
+                }
+            }
+        })
+    })
+    function show(){
+        $.ajax({
+            url:"{:url('permission/show')}",
+            dataType:'json',
+            success:function(result){
+                var tr='';
+                for (var i=0; i<result.length;i++){
+                    // console.log(result[i]);
+                    tr=tr+"<tr class='text-c'><td><input class='mycheckbox' name='' type='checkbox' value='"+result[i].id+"'></td><td>"+result[i].id+"</td><td class='text-c'>"+result[i].name+"</td><td class='text-c'>"+result[i].description+"</td><td class='text-c'>"+result[i].path+"</td><td class='text-c'>"+result[i].pc_name+"</td><td class='f-14 product-brand-manage'><a style='text-decoration:none' onClick='update("+result[i].id+",\""+result[i].name+"\",\""+result[i].description+"\",\""+result[i].path+"\","+result[i].pc_id+")' title='编辑'><i class='Hui-iconfont'>&#xe6df;</i></a> &nbsp;&nbsp;&nbsp;<a style='text-decoration:none' class='ml-5' onclick='mydelete("+result[i].id+")' title='删除'><i class='Hui-iconfont'>&#xe6e2;</i></a></td></tr>"
+                }
+                $(".table tbody").html(tr);
+            }
+        })
+    }
+    function mydelete(id) {
+        var __token__=$('#token_delete').html()
+        $.ajax({
+            url: "{:url('permission/delete')}",
+            type: 'post',
+            data: {
+                id:id,
+                __token__:__token__
+            },
+            dataType:'json',
+            success:function (result) {
+                if (result.status=='ok'){
+                    $('#token_delete').html(result.token)
+                    show();
+                }
+            }
+        })
+    }
+    function datadel() {
+        var __token__=$('#token_delete').html()
+        var r=confirm("您确定要全部删除吗？")
+        if (r==true){
+            var box=$(".mycheckbox:checked")
+            var id=''
+            for (var i = 0; i < box.length; i++ ){
+                id=id+','+box[i].value
+            }
+            $.ajax({
+                url: "{:url('permission/deleteMore')}",
+                type: 'post',
+                data: {
+                    id:id,
+                    __token__:__token__
+                },
+                dataType:'json',
+                success:function (result) {
+                    if (result.status=='ok'){
+                        $('#token_delete').html(result.token)
+                        show();
+                    }
+                }
+            })
+        }
+
+    }
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

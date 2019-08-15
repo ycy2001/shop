@@ -1,0 +1,184 @@
+{include file="header"}
+<section class="Hui-article-box">
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 管理员管理 <span class="c-gray en">&gt;</span> 角色管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+    <div class="Hui-article">
+        <article class="cl pd-20">
+            <input type="hidden"  id="__token__"value="{$Request.token}" />
+            <div class="cl pd-5 bg-1 bk-gray"> <span class="l"> <a href="javascript:;" onclick="datadel()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> <a class="btn btn-primary radius" href="{:url('role/add')}" ><i class="Hui-iconfont">&#xe600;</i> 添加角色</a> </span> <span hidden id="token_delete">{$token}</span> </div>
+            <div class="mt-10">
+                <table class="table table-border table-bordered table-hover table-bg">
+                    <thead>
+                    <tr>
+                        <th scope="col" colspan="6">角色管理</th>
+                    </tr>
+                    <tr class="text-c">
+                        <th width="25"><input type="checkbox" value="" name=""></th>
+                        <th width="40">ID</th>
+                        <th width="200">角色名</th>
+                        <th width="300">描述</th>
+                        <th width="70">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</section>
+<div id="modal-demo" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content radius">
+            <div class="modal-header">
+                <h3 class="modal-title">修改</h3>
+                <a class="close" data-dismiss="modal" aria-hidden="true" href="javascript:void();">×</a>
+            </div>
+            <div class="modal-body">
+                <input id="u_id" type="hidden" value="">
+                名称：<input type="text" id="u_name" placeholder="名称" value="" class="input-text" style="width:500px">
+            </div>
+            <div class="modal-body">
+                描述：<input type="text" id="u_description" placeholder="描述" value="" class="input-text" style="width:500px">
+            </div>
+            <div class="modal-body">
+                网站角色：<dl class="permission-list" id="permission-list"></dl>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="u_update">确定</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="footer"}
+<script type="text/javascript" src="__HUI__/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="__HUI__/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="__HUI__/lib/laypage/1.2/laypage.js"></script>
+<script>
+    function token(){
+        $.ajax({
+            url:"{:url('Common/token')}",
+            dataType:'json',
+            success:function(result) {
+                $('#__token__').val(result.token)
+            }
+        })
+    }
+    $(document).ready(function() {
+        show();
+    })
+    function modaldemo(id,name,description){
+        var mycheckbox=$(".mycheckbox").attr('checked',false)
+        $.each(mycheckbox, function (key,value) {
+
+        })
+        $("#u_id").val(id);
+        $("#u_name").val(name);
+        $("#u_description").val(description);
+        $.ajax({
+            url:'{:url("role/mypermissionShow")}',
+            data:{
+                id:id
+            },
+            success:function (result) {
+                $(".mycheckbox").prop("checked",false);
+                console.log(result.data)
+                $.each(result.data, function (key,value) {
+                    // console.log(value)
+                     var p_id="p"+value.permission_id
+                    $("#"+p_id).prop('checked',true)
+                })
+
+            }
+        })
+        $("#modal-demo").modal("show")
+    }
+    function show(){
+        $.ajax({
+            url:"{:url('Role/show')}",
+            dataType:'json',
+            success:function(result) {
+                if (result.status == 'ok') {
+                    var data = result.data
+                    var tr = '';
+                    for (var i = 0; i < data.length; i++) {
+                        tr = tr + "<tr class='text-c'><td><input class='mycheckbox' name='' type='checkbox' value='" + data[i]['id'] + "'></td><td>" + data[i]['id'] + "</td><td class='text-c'>" + data[i]['name'] + "</td><td class='text-c'>" + data[i]['description'] + "</td><td class='f-14 product-brand-manage'><a style='text-decoration:none' onClick='modaldemo(\"" + data[i]['id'] + "\",\"" + data[i]['name'] + "\",\"" + data[i]['description'] + "\")' title='编辑'><i class='Hui-iconfont'>&#xe695;</i></a> &nbsp;&nbsp;&nbsp;<a style='text-decoration:none' class='ml-5' onclick='mydelete(" + data[i]['id'] + ")' title='删除'><i class='Hui-iconfont'>&#xe6e2;</i></a></td></tr>"
+                    }
+                    $('.table tbody').html(tr);
+                }
+            }
+        })
+    }
+    function mydelete(id) {
+        var __token__=$('#token_delete').html()
+        $.ajax({
+            url: "{:url('role/delete')}",
+            type: 'post',
+            data: {
+                id:id,
+                __token__:__token__
+            },
+            dataType:'json',
+            success:function (result) {
+                if (result.status=='ok'){
+                    $('#token_delete').html(result.token)
+                    show();
+                }
+            }
+        })
+    }
+    $.ajax({
+        url:'{:url("role/permissionShow")}',
+        success:function (result) {
+            var data=result.data;
+            // console.log(data)
+            dl=""
+            $.each(data,function( key, value){
+                dl=dl+"<dt><label class=''><input style='color:blue' type='checkbox' value='' name='user-Character-1-0' id='user-Character-1-0'>"+key+"</label></dt><dd><dl class='cl permission-list2'>";
+                // console.log(value)
+                $.each(value,function( key1, value1){
+                    dl=dl+"<label class=''><input type='checkbox' class='mycheckbox' id='p"+value1['id']+"' value='"+value1['id']+"' >"+value1['name']+"</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                });
+                dl=dl+"</dd>";
+            });
+            // console.log(dl)
+            $('#permission-list').html(dl)
+        }
+    })
+    $("#u_update").click(function () {
+        var id = $('#u_id').val()
+        var name = $('#u_name').val()
+        var description = $('#u_description').val()
+        var __token__=$('#__token__').val()
+        var mycheckbox=$('.mycheckbox:checked')
+        var permission_id=''
+        for (var i = 0; i< mycheckbox.length;i++){
+            permission_id=permission_id+','+mycheckbox[i].value
+        }
+        $.ajax({
+            url:"{:url('role/update')}",
+            type:'post',
+            data:{
+                id:id,
+                name:name,
+                description:description,
+                permission_id:permission_id,
+                __token__:__token__
+            },
+            dataType:'json',
+            success:function(result){
+                console.log(result)
+                if (result.status=='ok'){
+                    show();
+                    token();
+                    $("#modal-demo").modal("hide")
+                }
+                if (result.status=='error'){
+                    show();
+                    token();
+                    $("#modal-demo").modal("hide")
+                }
+            }
+        })
+    })
+</script>
